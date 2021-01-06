@@ -3,86 +3,110 @@
     <el-container class="dond-appcontainer">
       <el-container>
         <el-main>
-          <div v-if="game.inplay">
-            <el-row align="bottom">
-              <el-col class="text-center" :span="boxColumnSize">
-                <div v-for="(box, index) in game.prizes" :key="index">
-                  <Box
-                    v-if="box.color == 'primary'"
-                    :box="box"
-                    :prizesInPlay="prizesInPlay"
-                    v-on:playBox="playBox(index)"
-                    :ofColorInPlay="bluesInPlay"
-                  ></Box>
-                </div>
-              </el-col>
-
-              <el-col
-                :span="infoColumnSize"
-                style="padding-left: 10px; padding-right: 10px"
-              >
-                <el-row style="margin-bottom: 20px" class="text-center">
-                  <el-col :span="8" style="padding-right: 10px">
-                    <el-card>
-                      <div slot="header"><b>Boxes Remaining</b></div>
-                      {{ prizesInPlay }}
-                    </el-card>
-                  </el-col>
-                  <el-col :span="8">
-                    <el-card>
-                      <div slot="header"><b>Boxes Opened</b></div>
-                      {{ boxesOpened }}
-                    </el-card>
-                  </el-col>
-                  <el-col :span="8" style="padding-left: 10px">
-                    <el-card>
-                      <div slot="header"><b>Prize Average</b></div>
-                      {{ prizeAverage }}
-                    </el-card>
-                  </el-col>
-                </el-row>
-                <el-alert
-                  v-if="
-                    boxesOpened == 5 ||
-                      boxesOpened == 8 ||
-                      boxesOpened == 11 ||
-                      boxesOpened == 14 ||
-                      boxesOpened == 17 ||
-                      boxesOpened == 20
-                  "
-                  :title="'You are now at: ' + prizesInPlay + ' box'"
-                  description="At this point you would typically want to trigger an offer from the banker.."
-                  type="warning"
-                  :closable="false"
-                  center
-                  show-icon
-                ></el-alert>
-                <el-alert
-                  v-else
-                  title="Please continue to open boxes.."
-                  description="Or trigger an offer from the banker."
-                  type="info"
-                  :closable="false"
-                  center
-                ></el-alert>
-              </el-col>
-
-              <el-col class="text-center" :span="boxColumnSize"
-                ><div v-for="(box, index) in game.prizes" :key="index">
-                  <Box
-                    v-if="box.color == 'danger'"
-                    :box="box"
-                    :prizesInPlay="prizesInPlay"
-                    v-on:playBox="playBox(index)"
-                    :ofColorInPlay="redsInPlay"
-                  ></Box></div
-              ></el-col>
-            </el-row>
-          </div>
+          <div v-if="fatal">FATAL ERROR</div>
           <div v-else>
-            <el-button @click="newGame"
-              ><i class="el-icon-circle-plus-outline"></i> New Game</el-button
-            >
+            <div v-if="game.inplay">
+              <el-row align="bottom">
+                <el-col class="text-center" :span="boxColumnSize">
+                  <div v-for="(box, index) in game.prizes" :key="index">
+                    <Box
+                      v-if="box.color == 'primary'"
+                      :box="box"
+                      :prizesInPlay="prizesInPlay"
+                      v-on:playBox="playBox(index)"
+                      :ofColorInPlay="bluesInPlay"
+                    ></Box>
+                  </div>
+                </el-col>
+
+                <el-col
+                  :span="infoColumnSize"
+                  style="padding-left: 10px; padding-right: 10px"
+                >
+                  <el-row style="margin-bottom: 20px" class="text-center">
+                    <el-col :span="8" style="padding-right: 10px">
+                      <el-card shadow="hover">
+                        <div slot="header"><b>Boxes Remaining</b></div>
+                        {{ prizesInPlay }}
+                      </el-card>
+                    </el-col>
+                    <el-col :span="8">
+                      <el-card shadow="hover">
+                        <div slot="header"><b>Boxes Opened</b></div>
+                        {{ boxesOpened }}
+                      </el-card>
+                    </el-col>
+                    <el-col :span="8" style="padding-left: 10px">
+                      <el-card shadow="hover">
+                        <div slot="header"><b>Prize Average</b></div>
+                        {{ prizeAverage }}
+                      </el-card>
+                    </el-col>
+                  </el-row>
+                  <el-alert
+                    v-if="offerDue"
+                    :title="'You are now at: ' + prizesInPlay + ' box'"
+                    description="At this point you would typically want to trigger an offer from the banker.."
+                    type="warning"
+                    :closable="false"
+                    center
+                    show-icon
+                  ></el-alert>
+                  <el-alert
+                    v-else
+                    title="Please continue to open boxes.."
+                    description="Or trigger an offer from the banker."
+                    type="info"
+                    :closable="false"
+                    center
+                  ></el-alert>
+                  <el-row style="margin-top: 20px">
+                    <el-col :span="12" style="padding-right: 5px">
+                      <el-button
+                        @click="newGame"
+                        style="width:100%"
+                        type="primary"
+                        plain
+                        ><i class="el-icon-circle-plus-outline"></i> New
+                        Game</el-button
+                      >
+                    </el-col>
+                    <el-col :span="12" style="padding-left: 5px">
+                      <el-button
+                        @click="triggerOffer"
+                        :loading="loading"
+                        style="width:100%"
+                        type="danger"
+                        plain
+                        ><i class="el-icon-phone-outline"></i>
+                        <span v-if="offerDue"><b>Trigger Banker Offer</b></span
+                        ><span v-else>Trigger Banker Offer</span></el-button
+                      >
+                    </el-col>
+                  </el-row>
+                </el-col>
+
+                <el-col class="text-center" :span="boxColumnSize"
+                  ><div v-for="(box, index) in game.prizes" :key="index">
+                    <Box
+                      v-if="box.color == 'danger'"
+                      :box="box"
+                      :prizesInPlay="prizesInPlay"
+                      v-on:playBox="playBox(index)"
+                      :ofColorInPlay="redsInPlay"
+                    ></Box></div
+                ></el-col>
+              </el-row>
+            </div>
+            <div v-else>
+              <el-button
+                @click="newGame"
+                style="width:100%"
+                type="primary"
+                plain
+                ><i class="el-icon-circle-plus-outline"></i> New Game</el-button
+              >
+            </div>
           </div>
         </el-main>
       </el-container>
@@ -102,7 +126,9 @@ export default {
       },
       menuCollapse: true,
       menuBgCol: "rgb(238, 241, 246)",
-      boxColumnSize: 5
+      boxColumnSize: 5,
+      loading: false,
+      fatal: false
     };
   },
   props: {},
@@ -159,6 +185,84 @@ export default {
         box: this.game.prizes[index]
       };
       this.game.steps.push(temp);
+    },
+    storeAndGenerateOffer(offervalue) {
+      this.loading = true;
+      let percofavg = (offervalue / this.prizeAverageNumber) * 100;
+      const postdata = new FormData();
+      postdata.append("board", this.prizesByteString);
+      postdata.append("boxesremaining", this.prizesInPlay);
+      postdata.append("boxesopened", this.boxesOpened);
+      postdata.append("average", this.prizeAverageNumber);
+      postdata.append("offer", offervalue);
+      postdata.append("percentofaverage", percofavg);
+      postdata.append("gameoverview", JSON.stringify(this.game.steps));
+      this.$http
+        .post("/api/v1/offers", postdata)
+        .then(response => {
+          if (response.data.status) {
+            let temp = {
+              board: this.prizesByteString,
+              average: this.prizeAverageNumber,
+              real: {
+                offervalue: parseInt(offervalue),
+                percentofaverage: Math.round(percofavg)
+              },
+              simulated: {
+                lowoffer: response.data.low_offer,
+                highoffer: response.data.high_offer,
+                percentrange: response.data.offer_range
+              }
+            };
+            this.game.offers.push(temp);
+            let step = {
+              type: "offer",
+              offer: temp
+            };
+            this.game.steps.push(step);
+            this.$alert(
+              "The Generated Offer is: £" +
+                response.data.low_offer +
+                " - £" +
+                response.data.high_offer,
+              "Generated Offer",
+              {
+                confirmButtonText: "OK",
+                callback: action => {
+                  if (action) {
+                    //nothing
+                  }
+                }
+              }
+            );
+            this.loading = false;
+          } else {
+            console.error("error storing/generating offer: " + response);
+            this.loading = false;
+            this.fatal = true;
+          }
+        })
+        .catch(error => {
+          console.error("error storing/generating offer: " + error);
+          this.loading = false;
+          this.fatal = true;
+        });
+    },
+    triggerOffer() {
+      this.$prompt(
+        "Please enter the offer from the Banker",
+        "Enter Banker Offer",
+        {
+          confirmButtonText: "OK",
+          cancelButtonText: "Cancel"
+        }
+      )
+        .then(({ value }) => {
+          this.storeAndGenerateOffer(value);
+        })
+        .catch(() => {
+          console.log("Banker offer cancelled");
+        });
     }
   },
   computed: {
@@ -258,6 +362,24 @@ export default {
         "£" +
         new Intl.NumberFormat().format(Math.round(tot / this.prizesInPlay))
       );
+    },
+    prizeAverageNumber: function() {
+      let temp = this.prizeAverage.replace("£", "");
+      return temp.replace(",", "");
+    },
+    offerDue: function() {
+      if (
+        this.boxesOpened == 5 ||
+        this.boxesOpened == 8 ||
+        this.boxesOpened == 11 ||
+        this.boxesOpened == 14 ||
+        this.boxesOpened == 17 ||
+        this.boxesOpened == 20
+      ) {
+        return true;
+      } else {
+        return false;
+      }
     }
   },
   mounted() {}
@@ -285,5 +407,11 @@ body {
 }
 .text-center {
   text-align: center;
+}
+.el-card {
+  font-size: 18pt;
+}
+.el-alert {
+  font-size: 14pt;
 }
 </style>

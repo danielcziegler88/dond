@@ -1,6 +1,6 @@
 version: "3.2"
 services:
-  mysql:
+  dond_mysql:
     image: mariadb:latest
     restart: always
     ports: 
@@ -12,13 +12,13 @@ services:
       MYSQL_DATABASE: "${DB_NAME}"
       MYSQL_USER: "${DB_USERNAME}"
       MYSQL_PASSWORD: "${DB_PASSWORD}"
-    container_name: mysql
+    container_name: dond_mysql
     build:
       context: "./mysql/"
 
-  vue:
+  dond_vue:
     image: node:current-alpine
-    container_name: vue
+    container_name: dond_vue
     working_dir: /home/node/app
     volumes:
       - ./ui:/home/node/app
@@ -26,24 +26,24 @@ services:
       NODE_ENV: development
     command: "npm run serve"
 
-  nginx:
+  dond_nginx:
     image: nginx:alpine
     volumes:
       - ./nginx/dev.conf.nginx:/etc/nginx/conf.d/default.conf
     ports:
       - 80:80
-    container_name: nginx
+    container_name: dond_nginx
     depends_on:
-      - lumen
+      - dond_lumen
 
-  lumen:
+  dond_lumen:
     build:
       context: "./php/"
-    container_name: lumen
+    container_name: dond_lumen
     volumes:
       - ./backend:/app
     depends_on:
-      - mysql
+      - dond_mysql
 
 volumes:
   data:

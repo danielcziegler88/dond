@@ -11,4 +11,4 @@ VOLUME /app
 WORKDIR /app
 EXPOSE 8000
 # CMD php -S lumen:8000 -t public
-CMD php artisan migrate && php artisan db:seed && php -S lumen:8000 -t public
+CMD php artisan migrate && php artisan db:seed && php -S dond_lumen:8000 -t public
